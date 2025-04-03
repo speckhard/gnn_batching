@@ -41,9 +41,12 @@ BASE_DIR = '/home/dts/Documents/hu/jraph_MPEU/batch_data'
 # PROFILING_JNP_CSV = 'parsed_profiling_qm9_aflow_schnet_100k_steps_23_54__8_03_2024.csv'
 # ROUND_PROFILING_JNP_CSV = 'parsed_profiling_round_to_multiple_qm9_aflow_schnet_100k_steps_23_54__8_03_2024.csv'
 
+
+# /home/dts/Documents/hu/parsed_profiling_painn_cpu_qm9_aflow_schnet_mpeu_100k_steps_17_31__03_04_2025.csv
 # COMBINED_CSV = 'parsed_profiling_static_batching_seb_fix_qm9_aflow_schnet_mpeu_100k_steps_16_05__12_12_2024.csv'
 
-COMBINED_CSV = 'parsed_profiling_static_batching_seb_fix_qm9_aflow_schnet_mpeu_100k_steps_15_12__30_12_2024.csv'
+COMBINED_CSV = 'parsed_profiling_painn_cpu_qm9_aflow_schnet_mpeu_100k_steps_17_31__03_04_2025.csv'
+# COMBINED_CSV = 'parsed_profiling_static_batching_seb_fix_qm9_aflow_schnet_mpeu_100k_steps_15_12__30_12_2024.csv'
 # COMBINED_CSV = 'parsed_profiling_static_batching_seb_fix_qm9_aflow_schnet_mpeu_100k_steps_11_31__23_12_2024.csv'
 # COMBINED_CSV = 'parsed_profiling_batching_2_000_000_steps_aflow_qm9_20_12_2024.csv'
 
@@ -195,7 +198,7 @@ def plot_batching_update_subplot(df, model, compute_type, mean_or_median):
             # elif batch_method == 'static':
             #     batching_round_to_64 = True
             else:
-                batching_round_to_64 = True
+                batching_round_to_64 = False  # Change this to True with old datasets.
                 # sys.err(f'error wrong batch method {batch_method}')
             for batch_size in BATCH_SIZE_LIST:
 
@@ -253,22 +256,26 @@ def plot_batching_update_subplot(df, model, compute_type, mean_or_median):
 
 
     if compute_type == 'cpu':
-        ylim = 200
-        ylabels = [0, 50, 100, 150, 200]
-        ax[0, 1].text(12, 6.5, 'CPU only', font=FONT, fontsize=FONTSIZE)
+        ylim = 1000
+        # ylabels = [0, 50, 100, 150, 200]
+        ylabels = [0, 200, 400, 600, 800, 1000]
+
+        ax[0, 1].text(12, 6.0, 'CPU only', font=FONT, fontsize=FONTSIZE)
     else:
         # ax[0, 1].text(12, 6.5, 'GPU+CPU', font=FONT, fontsize=FONTSIZE)
         ylim = 15
         ylabels = [0, 5, 10, 15]
     # Change this to 4.5 if using the CPU
-    ax[0, 1].text(12, 5.5, mean_or_median, font=FONT, fontsize=FONTSIZE)
-    ax[0, 1].text(12, 4.5, '100,000 steps', font=FONT, fontsize=FONTSIZE)
+    ax[0, 1].text(12, 5.0, mean_or_median, font=FONT, fontsize=FONTSIZE)
+    ax[0, 1].text(12, 4.0, '100,000 steps', font=FONT, fontsize=FONTSIZE)
 
     if model == 'schnet':
         model_label = 'SchNet'
+    elif model == 'painn':
+        model_label = 'PaiNN'
     else:
         model_label = model
-    ax[0, 1].text(12, 6.5, model_label, font=FONT, fontsize=FONTSIZE)
+    ax[0, 1].text(12, 7.0, model_label, font=FONT, fontsize=FONTSIZE)
 
     ax[1, 0].set_yticks(ylabels, font=FONT, fontsize=FONTSIZE)
     ax[1, 0].set_yticklabels(ylabels, font=FONT, fontsize=FONTSIZE, rotation=0)
@@ -332,7 +339,7 @@ def plot_recompilation_bar_plot(df):
     # df = df[['batch_size', 'batching_round_to_64', 'dataset', 'computing_type', 'batching_type', 'recompilation_counter']]
     profile_column = 'recompilation'
     computing_type = 'gpu_a100'
-    model = 'MPEU'
+    model = 'PaiNN'
     dataset = 'aflow'
     # batch_method = ''
 
@@ -394,9 +401,10 @@ def main(argv):
     df = pd.read_csv(os.path.join(BASE_DIR, COMBINED_CSV))
     # Ok now let's plot the batching times. Let's plot 4 graphs.
     # AFLOW / SchNet (GPU / CPU)
-    plot_batching_update_subplot(df, model='MPEU',
-                                 compute_type='gpu_a100',
-                                 mean_or_median='median')
+    model = 'painn'
+    plot_batching_update_subplot(df, model='painn',
+                                 compute_type='cpu',
+                                 mean_or_median='mean')
                                 #  compute_type='gpu_a100')
     # plot_recompilation_bar_plot(df)
 
