@@ -19,13 +19,18 @@ flags.DEFINE_string(
 
 BASE_DIR = '/home/dts/Documents/hu/jraph_MPEU/batch_data'
 # COMBINED_CSV = 'parsed_profiling_batching_2_000_000_steps_aflow_qm9_20_12_2024.csv'
-COMBINED_CSV = 'parsed_profiling_batching_2_000_000_steps_combined_19_01_2025.csv'
+# Used for the MPEU/SchNet
+# COMBINED_CSV = 'parsed_profiling_batching_2_000_000_steps_combined_19_01_2025.csv'
+# Used for PaiNN
+COMBINED_CSV = 'parsed_profiling_painn_batching_2_000_000_steps_15_05_2025.csv'
 
 # BATCH_SIZE_LIST = [16, 32, 64, 128]
 BATCH_SIZE_LIST = [16, 32, 64, 128]
 
 # MODEL_TYPE_LIST = ['schnet', 'mpeu']
-MODEL_TYPE_LIST = ['schnet', 'MPEU']
+# MODEL_TYPE_LIST = ['schnet', 'MPEU', 'PaiNN']
+MODEL_TYPE_LIST = ['schnet', 'painn']
+
 
 # BATCH_METHOD_LIST = ['dynamic', 'static']
 BATCH_METHOD_LIST = ['dynamic', 'static'] ##, 'static-64']
@@ -158,7 +163,8 @@ def plot_curves(
 
                 print(
                     f'batch_size: {batch_size}, batching_method: {batch_method},'
-                    f' model: {model}')
+                    f' model: {model}, batching_round: {batching_round_to_64}, '
+                    f' dataset: {dataset}, data_split: {data_split}')
                 print(avg_metric_list)    
 
                 axs[x_shift, y_shift].plot(step_list, avg_metric_list,

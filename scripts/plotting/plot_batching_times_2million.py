@@ -38,8 +38,13 @@ from matplotlib import rc, font_manager
 
 BASE_DIR = '/home/dts/Documents/hu/jraph_MPEU/batch_data'
 ## The 2 million profiling steps data:
-COMBINED_CSV = 'parsed_profiling_batching_2_000_000_steps_combined_19_01_2025.csv'
+# Used for MPEU/SchNet
+# COMBINED_CSV = 'parsed_profiling_batching_2_000_000_steps_combined_19_01_2025.csv'
+# Used for PaiNN
+COMBINED_CSV = 'parsed_profiling_painn_batching_2_000_000_steps_15_05_2025.csv'
+
 # COMBINED_CSV = 'parsed_profiling_static_batching_seb_fix_qm9_aflow_schnet_mpeu_100k_steps_11_31__23_12_2024.csv'
+
 # COMBINED_CSV = 'parsed_profiling_batching_2_000_000_steps_aflow_qm9_20_12_2024.csv'
 
 BATCH_SIZE_DICT = {
@@ -181,6 +186,10 @@ def plot_batching_update_subplot(df, model, compute_type, mean_or_median):
         ylim = 10
         ylabels = [0, 2, 4, 6, 8, 10]
 
+    elif model == 'painn':
+        ylim = 50
+        ylabels = [0, 10, 20, 30, 40]
+
     for plot_num in range(len(axes_list)):
         dataset = plot_content_list[plot_num][0]  # Should be either AFLOW or qm9
         profile_column = plot_content_list[plot_num][1]  # Either `batching` or `update`
@@ -236,9 +245,12 @@ def plot_batching_update_subplot(df, model, compute_type, mean_or_median):
     if model == 'schnet':
         model_label = 'SchNet'
         offset = 0
-    else:
+    elif model == 'MPEU':
         model_label = model
         offset = 1.5
+    elif model == 'painn':
+        model_label = 'PaiNN'
+        offset=0
 
     if compute_type == 'cpu':
         ylim = 200
@@ -252,6 +264,9 @@ def plot_batching_update_subplot(df, model, compute_type, mean_or_median):
         elif model == 'MPEU':
             ylim = 10
             ylabels = [0, 2, 4, 6, 8, 10]
+        elif model == 'painn':
+            ylim = 40
+            ylabels = [0, 10, 20, 30, 40]
 
     ax[0, 1].text(12, 5.5+offset, mean_or_median, font=FONT, fontsize=FONTSIZE)
 
@@ -263,12 +278,14 @@ def plot_batching_update_subplot(df, model, compute_type, mean_or_median):
     ax[0, 0].set_ylabel('Batching time (ms)', fontsize=FONTSIZE, font=FONT)
     # ax[0, 0].set_yscale('log')
     # ax[0, 0].set_yticks([1E-1, 1E-0, 1E1, 1E2, 1E3], minor=False)
-    ax[0, 0].set_ylim(0, ylim)
+    ax[0, 0].set_ylim(0, 8)
     ax[0, 0].set_xticklabels([])
-    ax[0, 0].set_yticklabels(ylabels, font=FONT, fontsize=FONTSIZE, rotation=0)
+    ax[0, 0].set_yticklabels([0, 2, 4, 6, 8], font=FONT, fontsize=FONTSIZE, rotation=0)
 
 
-    ax[0, 1].set_ylim(0, ylim)
+    # ax[0, 1].set_ylim(0, ylim)
+    ax[0, 1].set_ylim(0, 8)
+
     ax[0, 1].set_yticklabels([])
     ax[0, 1].set_xticklabels([])
     ax[0, 0].set_xticks([16, 32, 64, 128])
@@ -344,8 +361,8 @@ def plot_recompilation_bar_plot(df):
     """
     profile_column = 'recompilation'
     computing_type = 'gpu_a100'
-    model = 'MPEU'
-    dataset = 'aflow'
+    model = 'painn'
+    dataset = 'qm9'
     color_list = ['#1f77b4', '#ff7f0e', '#9467bd']
 
     # Create a new batching method, batch-64 based on rounding.
@@ -389,7 +406,7 @@ def plot_recompilation_bar_plot(df):
 
     plt.tight_layout()
     plt.savefig(
-        '/home/dts/Documents/theory/batching_paper/figs/recompilation_count_2_million_dataset_{dataset}.png',
+        '/home/dts/Documents/theory/batching_paper/figs/recompilation_count_2_million_dataset_{dataset}_model_{model}.png',
         dpi=600)
     plt.show()
 
@@ -399,11 +416,11 @@ def main(argv):
     df = pd.read_csv(os.path.join(BASE_DIR, COMBINED_CSV))
     # Ok now let's plot the batching times. Let's plot 4 graphs.
     # AFLOW / SchNet (GPU / CPU)
-    plot_batching_update_subplot(df, model='MPEU',
-                                 compute_type='gpu_a100',
-                                 mean_or_median='median')
+    # plot_batching_update_subplot(df, model='painn',
+    #                              compute_type='gpu_a100',
+    #                              mean_or_median='mean')
 
-    # plot_recompilation_bar_plot(df)
+    plot_recompilation_bar_plot(df)
 
 if __name__ == '__main__':
     app.run(main)
