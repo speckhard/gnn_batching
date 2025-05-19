@@ -132,9 +132,9 @@ def get_avg_std_of_profile_column(
         if profile_column == 'update':
             ## Then we need to subtract the mean batching time and add the batching time standard dev.
             gpu_profiling_df_batching = gpu_profiling_df[profile_column_dict['batching']]
-            median_batching, std_batching = gpu_profiling_df_batching.mean(), gpu_profiling_df_batching.std()
+            median_batching, std_batching = gpu_profiling_df_batching.median(), gpu_profiling_df_batching.std()
             mean_result = mean_result - median_batching
-            std_result = std_result + std_batching     
+            std_result = std_result + std_batching
     else:
         raise(ValueError)
     return mean_result, std_result
@@ -353,6 +353,7 @@ def plot_batching_update_subplot(df, model, compute_type, mean_or_median):
         dpi=600)
     plt.show()
 
+
 def plot_recompilation_bar_plot(df):
     """Create bar plot of # of recompilations.
     
@@ -406,7 +407,7 @@ def plot_recompilation_bar_plot(df):
 
     plt.tight_layout()
     plt.savefig(
-        '/home/dts/Documents/theory/batching_paper/figs/recompilation_count_2_million_dataset_{dataset}_model_{model}.png',
+        f'/home/dts/Documents/theory/batching_paper/figs/recompilation_count_2_million_dataset_{dataset}_model_{model}.png',
         dpi=600)
     plt.show()
 
@@ -416,11 +417,11 @@ def main(argv):
     df = pd.read_csv(os.path.join(BASE_DIR, COMBINED_CSV))
     # Ok now let's plot the batching times. Let's plot 4 graphs.
     # AFLOW / SchNet (GPU / CPU)
-    # plot_batching_update_subplot(df, model='painn',
-    #                              compute_type='gpu_a100',
-    #                              mean_or_median='mean')
+    plot_batching_update_subplot(df, model='painn',
+                                 compute_type='gpu_a100',
+                                 mean_or_median='mean')
 
-    plot_recompilation_bar_plot(df)
+    # plot_recompilation_bar_plot(df)
 
 if __name__ == '__main__':
     app.run(main)
