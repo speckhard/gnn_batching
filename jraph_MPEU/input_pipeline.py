@@ -608,8 +608,6 @@ def load_split_dict(workdir):
     The keys are integer ids and the values are splitnames as strings."""
     with open(os.path.join(workdir, 'splits.json'), 'r') as splits_file:
         splits_dict = json.load(splits_file, parse_int=True)
-    if "database_path" in splits_dict:
-        del splits_dict["database_path"]
     return {int(k): v for k, v in splits_dict.items()}
 
 
