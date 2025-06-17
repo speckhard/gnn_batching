@@ -364,7 +364,8 @@ def plot_recompilation_bar_plot(df):
     computing_type = 'gpu_a100'
     model = 'painn'
     dataset = 'qm9'
-    color_list = ['#1f77b4', '#ff7f0e', '#9467bd']
+    # color_list = ['#1f77b4', '#ff7f0e', '#9467bd']
+    color_list = ['skyblue', '#ff7f0e', 'mediumvioletred']
 
     # Create a new batching method, batch-64 based on rounding.
     df.loc[
@@ -373,18 +374,30 @@ def plot_recompilation_bar_plot(df):
     df = df[df['model'] == model]
     df = df[df['computing_type'] == computing_type]
     df = df[df['dataset'] == dataset]
+    df['recompilation_counter'] = df['recompilation_counter'] - 1  # Don't count first compile.
+    
 
     # Now take the mean over the different iterations.
     df = df[['batch_size', 'batching_type', 'recompilation_counter']]
+    print(df.columns)
     df = df.groupby(['batch_size', 'batching_type']).mean()
-
+    #[['static', 'static-64', 'dynamic']]
+    #[['age','height','weight']]
+    print(df.columns)
     # There is no stdev since the data is alwasy the same shuffle.
     # df_std = df.groupby(['batch_size', 'batching_type']).std()
     # print(df_std)
-    print(df)
-    ax = df.unstack().plot.bar(figsize=(5.1, 4), color=color_list)
+    print(df.unstack())
+    print(df.unstack()['recompilation_counter'][['static', 'static-64', 'dynamic']])
+    df = df.unstack()['recompilation_counter'][['static', 'static-64', 'dynamic']]
+    ax = df.plot.bar(figsize=(5.1, 4), color=color_list, width=0.9)
+    # bars = ax.patches
+    # patterns = [ "" , "o" , "-"]
+    # hatches = ''.join(h*len(df) for h in patterns)
 
-    import matplotlib.font_manager as font_manager
+    # for bar, hatch in zip(bars, hatches):
+    #     bar.set_hatch(hatch) 
+    # import matplotlib.font_manager as font_manager
     font = font_manager.FontProperties(family=FONT,
                                     # weight='bold',
                                     style='normal', size=FONTSIZE)
@@ -412,6 +425,49 @@ def plot_recompilation_bar_plot(df):
     plt.show()
 
 
+def hard_code_recompilation_plot():
+    """Give the raw numbers from the above function.
+    
+    This is a workaround since I cannot seem to get the correct ordering of for the columns
+    in the pandas bar plot.
+    """
+    color_list = ['#1f77b4', '#ff7f0e', '#9467bd']
+    __, ax = plt.subplots(figsize=(5.1, 4))
+    bar_width = 0.3
+    x = np.arange(len([16, 32, 64, 128]))
+    static_2n_data = [2, 3, 2, 0.0]
+    static_64_data = [68.0, 102.0, 157.0, 234.0]
+    dynamic_data = [0, 0, 0, 0]
+    plt.bar(x - 0.3, dynamic_data, bar_width, label='dynamic', color="skyblue")
+    plt.bar(x + 0.3, static_2n_data, bar_width, label='static-$2^N$', color=color_list[1])
+    plt.bar(x, static_64_data, bar_width, label='static-64', color='mediumvioletred')
+
+    import matplotlib.font_manager as font_manager
+    font = font_manager.FontProperties(family=FONT,
+                                    # weight='bold',
+                                    style='normal', size=FONTSIZE)
+
+
+    ax.set_xlabel('Batch size', fontsize=FONTSIZE, font=FONT)
+    ax.set_ylabel('Number of recompilations', fontsize=FONTSIZE, font=FONT)
+    ax.set_xticks([0, 1, 2, 3], font=FONT, fontsize=FONTSIZE, rotation=45)
+
+    ax.set_xticklabels([16, 32, 64, 128], font=FONT, fontsize=FONTSIZE, rotation=45)
+    ax.set_yticks([0, 50, 100, 150, 200, 250], font=FONT, fontsize=FONTSIZE)
+    # ax.set_yticklabels([0, 10, 20, 30, 40, 50], font=FONT, fontsize=FONTSIZE)
+    # else:
+    #     ax.set_yticklabels([0, 50, 100, 150, 200, 250], font=FONT, fontsize=FONTSIZE)
+    plt.legend(
+        ["dynamic", "static-$2^N$", "static-$64$"], fontsize=FONTSIZE,
+        prop=font, edgecolor="black", fancybox=False, loc='upper left')
+    offset=0
+    ax.text(2.0, 230, 'QM9', font=FONT, fontsize=FONTSIZE)
+    plt.tight_layout()
+    plt.savefig(
+        f'/home/dts/Documents/theory/batching_paper/figs/recompilation_count_2_million.png',
+        dpi=600)
+    plt.show()
+
 def main(argv):
     # plot learning curves
     df = pd.read_csv(os.path.join(BASE_DIR, COMBINED_CSV))
@@ -422,6 +478,7 @@ def main(argv):
                                  mean_or_median='mean')
 
     # plot_recompilation_bar_plot(df)
+    # hard_code_recompilation_plot()
 
 if __name__ == '__main__':
     app.run(main)

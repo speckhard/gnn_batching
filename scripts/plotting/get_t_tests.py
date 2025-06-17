@@ -90,7 +90,8 @@ def get_t_test_data(
 # computing_typecomputing_type
 
 def plot_t_test(t_test_matrix, batch_size, model, dataset):
-    f, ax = plt.subplots(figsize=(11, 9))
+    sns.set_theme(font="serif")
+    f, ax = plt.subplots(figsize=(5.1, 4.3))
     cmap = sns.diverging_palette(250, 10, as_cmap=True)
     x_axis_labels = ['dynamic', 'static-$2^N$', 'static-64']
     y_axis_labels = ['dynamic', 'static-$2^N$', 'static-64']
@@ -100,38 +101,49 @@ def plot_t_test(t_test_matrix, batch_size, model, dataset):
             linewidth=.8, cbar_kws={"shrink": .99}, ax=ax,
             annot_kws={'size': 15},
             xticklabels=x_axis_labels, yticklabels=y_axis_labels,
-            annot=True)
-    g.set_xticklabels(g.get_xmajorticklabels(), fontsize = 16)
-    g.set_yticklabels(g.get_ymajorticklabels(), fontsize = 16)
+            annot=True, vmin=-3, vmax=3)
+    g.set_xticklabels(g.get_xmajorticklabels(), fontsize = 12)
+    g.set_yticklabels(g.get_ymajorticklabels(), fontsize = 12)
 
-    plt.xlabel('Batching method', fontsize=16)
-    plt.ylabel('Batching method', fontsize=16)
-    plt.title(f'T test statistics: Data: {dataset}, model: {model}, batch_size: {batch_size}', fontsize=16)
+    plt.xlabel('Batching method', fontsize=12)
+    plt.ylabel('Batching method', fontsize=12)
+    # plt.title(f'T test statistics: Data: {dataset}, model: {model}, batch_size: {batch_size}', fontsize=16)
     plt.tight_layout()
     base_dir = '/home/dts/Documents/theory/batching_paper/figs/t_test_data/'
-    plt.savefig(f'{base_dir}data_{dataset}_model_{model}_batch_size_16_t_test_statistics')
+    plt.savefig(f'{base_dir}data_{dataset}_model_{model}_batch_size_{batch_size}_t_test_statistics')
+    cbar = ax.collections[0].colorbar
+    # here set the labelsize by 20
+    cbar.ax.tick_params(labelsize=12)
+    cbar.ax.yaxis.set_ticks([-3, -2, -1, 0, 1, 2, 3])
+    plt.show()
 
 def plot_t_test_p_values(p_value_matrix, batch_size, model, dataset):
-    f, ax = plt.subplots(figsize=(11, 9))
+    sns.set_theme(font="serif")
+    f, ax = plt.subplots(figsize=(5.1, 4.3))
     cmap = sns.diverging_palette(250, 10, as_cmap=True)
     x_axis_labels = ['dynamic', 'static-$2^N$', 'static-64']
     y_axis_labels = ['dynamic', 'static-$2^N$', 'static-64']
     # sns.set_theme(font_scale=1.4)
     g = sns.heatmap(p_value_matrix, cmap=cmap, 
             square=True,
-            linewidth=.8, cbar_kws={"shrink": .99}, ax=ax,
+            linewidth=.8, cbar_kws={"shrink": .99, 'ticks': [0, 0.2, 0.4, 0.6, 0.8, 1.0]}, ax=ax,
             annot_kws={'size': 15},
             xticklabels=x_axis_labels, yticklabels=y_axis_labels,
-            annot=True)
-    g.set_xticklabels(g.get_xmajorticklabels(), fontsize = 16)
-    g.set_yticklabels(g.get_ymajorticklabels(), fontsize = 16)
+            annot=True, vmin=0, vmax=1.0)
+    g.set_xticklabels(g.get_xmajorticklabels(), fontsize = 12)
+    g.set_yticklabels(g.get_ymajorticklabels(), fontsize = 12)
 
-    plt.xlabel('Batching method', fontsize=16)
-    plt.ylabel('Batching method', fontsize=16)
-    plt.title(f'T test p-values: Data: {dataset}, model: {model}, batch_size: {batch_size}', fontsize=16)
+    plt.xlabel('Batching method', fontsize=12)
+    plt.ylabel('Batching method', fontsize=12)
+    # plt.title(f'T test p-values: Data: {dataset}, model: {model}, batch_size: {batch_size}', fontsize=16)
     plt.tight_layout()
     base_dir = '/home/dts/Documents/theory/batching_paper/figs/t_test_data/'
-    plt.savefig(f'{base_dir}data_{dataset}_model_{model}_batch_size_26_t_test_p_values')
+    cbar = ax.collections[0].colorbar
+    # here set the labelsize by 20
+    cbar.ax.tick_params(labelsize=12)
+    cbar.ax.yaxis.set_ticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
+    plt.savefig(f'{base_dir}data_{dataset}_model_{model}_batch_size_{batch_size}_t_test_p_values')
+    plt.show()
 
 def main(args):
 
@@ -140,7 +152,7 @@ def main(args):
     # print(ttest_ind(schnet_df['static'], schnet_df['dynamic']))
     model = 'schnet'
     data_split = 'test'
-    dataset = 'aflow'
+    dataset = 'qm9'
     primary_batching_method = 'static'
     secondary_batching_method = 'dynamic'
     compute_type = 'gpu_a100'
@@ -149,10 +161,10 @@ def main(args):
     # MODEL_TYPE_LIST = ['schnet', 'MPEU']
     # DATASET_LIST = ['aflow', 'qm9']
 
-    BATCH_SIZE_LIST = [32]
+    BATCH_SIZE_LIST = [64]
     BATCHING_METHODS = ['dynamic', 'static', 'static-64']
     MODEL_TYPE_LIST = ['schnet']
-    DATASET_LIST = ['aflow']
+    DATASET_LIST = ['qm9']
 
     t_test_matrix = np.zeros((3,3))
     p_value_matrix = np.zeros((3, 3))

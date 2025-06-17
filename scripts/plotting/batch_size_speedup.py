@@ -32,118 +32,141 @@ BASE_DIR = '/home/dts/Documents/hu/jraph_MPEU/batch_data'
 COMBINED_CSV = 'parsed_profiling_painn_batching_2_000_000_steps_15_05_2025.csv'
 
 
-def plot_batch_speedup(df):
+def plot_batch_speedup(old_df):
     """Create bar plot of # of recompilations.
     
     X-axis is the batch size.
     Y-axis is the number of recompilations.
     """
-    
+    _, ax = plt.subplots(2, 1, figsize=(5.1, 8))
+    old_df.loc[
+        (old_df.batching_type == 'static') & (old_df.batching_round_to_64 == True),
+        'batching_type'] ='static-64'
     # profile_column = 'recompilation'
-    profile_column = 'step_2_000_000_update_time_mean'
-    computing_type = 'gpu_a100'
-    model = 'painn'
-    dataset = 'aflow'
-    color_list = ['#1f77b4', '#ff7f0e', '#9467bd']
+    for dataset in ['aflow', 'qm9']:
+        if dataset == 'aflow':
+            ax_index = 0
+        else:
+            ax_index = 1
+        profile_column = 'step_2_000_000_update_time_mean'
+        computing_type = 'gpu_a100'
+        model = 'painn'
+        # dataset = 'qm9'
+        color_list = ['#1f77b4', '#ff7f0e', '#9467bd']
 
-    # Create a new batching method, batch-64 based on rounding.
-    df.loc[
-        (df.batching_type == 'static') & (df.batching_round_to_64 == True),'batching_type'] ='static-64'
-    # Get data only for gpu and AFLOW and MPEU
-    # Static 64 reuslts
-    print(df[
-        (df['dataset'] == dataset) & (df['model'] == model) &
-        (df['batching_type'] == 'static') &
-        (df['computing_type'] == computing_type) &
-        (df['batch_size'] == 128) &
-        (df['batching_round_to_64'] == True)][profile_column])
-    # static 2N results
-    print(df[
-        (df['dataset'] == dataset) & (df['model'] == model) &
-        (df['batching_type'] == 'static') &
-        (df['computing_type'] == computing_type) &
-        (df['batch_size'] == 128) &
-        (df['batching_round_to_64'] == False)][profile_column])
-    df = df[df['model'] == model]
-    df = df[df['computing_type'] == computing_type]
-    df = df[df['dataset'] == dataset]
+        # Create a new batching method, batch-64 based on rounding.
 
-    # Now take the mean over the different iterations.
+        # Get data only for gpu and AFLOW and MPEU.
+        # Static 64 reuslts.
+        # print('static 64 results')
+        # print(df[
+        #     (df['dataset'] == dataset) & (df['model'] == model) &
+        #     (df['batching_type'] == 'static-64') &
+        #     (df['computing_type'] == computing_type) &
+        #     (df['batch_size'] == 128) &
+        #     (df['batching_round_to_64'] == True)][profile_column])
+        # print('static-2n results')
+        # static 2N results
+        # print(df[
+        #     (df['dataset'] == dataset) & (df['model'] == model) &
+        #     (df['batching_type'] == 'static') &
+        #     (df['computing_type'] == computing_type) &
+        #     (df['batch_size'] == 128) &
+        #     (df['batching_round_to_64'] == False)][profile_column])
+        df = old_df[old_df['model'] == model]
+        df = df[df['computing_type'] == computing_type]
+        df = df[df['dataset'] == dataset]
 
-    df = df[['batch_size', 'batching_type', profile_column]]
-    print(df[df['batch_size'] == 128])
-    df = df.groupby(['batch_size', 'batching_type']).mean()
-    ungrouped_df = df.reset_index()
-    slowest_time = {'16': 0, '32': 0, '64': 0, '128': 0}
-    print(df.columns)
-    print(df)
-    print('ungrouped df')
-    print(ungrouped_df)
-    print(ungrouped_df.columns)
-    # Speedup is defined as slowest time - time / slowest time.
-    for batch_size in [16, 32, 64, 128]:
+        # Now take the mean over the different iterations.
 
-        for batching_type in ['static', 'static-64', 'dynamic']:
-            time = ungrouped_df[(ungrouped_df['batch_size'] == batch_size) & (ungrouped_df['batching_type'] == batching_type)]['step_2_000_000_update_time_mean'].values[0]
-            print(f' the slowest time for the batch size: {batch_size} is {slowest_time[str(batch_size)]}')
-            print(f'time is {time}')
-            if time > slowest_time[str(batch_size)]:
-                slowest_time[str(batch_size)] = time
-        for batching_type in ['static', 'static-64', 'dynamic']:
-            time = ungrouped_df[(ungrouped_df['batch_size'] == batch_size) & (ungrouped_df['batching_type'] == batching_type)]['step_2_000_000_update_time_mean'].values[0]
-            ungrouped_df.loc[(ungrouped_df['batch_size'] == batch_size) & (ungrouped_df['batching_type'] == batching_type), 'step_2_000_000_update_time_mean'] = (slowest_time[str(batch_size)]- time)/slowest_time[str(batch_size)]*100
-    
-    # There is no stdev since the data is alwasy the same shuffle.
-    # df_std = df.groupby(['batch_size', 'batching_type']).std()
-    # print(df_std)
-    print('ungrouped df after modifying values')
-    print(ungrouped_df)
+        df = df[['batch_size', 'batching_type', profile_column]]
+        print('batch size 128 results')
+        print(df[df['batch_size'] == 128])
+        df = df.groupby(['batch_size', 'batching_type']).mean()
+        ungrouped_df = df.reset_index()
+        slowest_time = {'16': 0, '32': 0, '64': 0, '128': 0}
+        print(f' df columns {df.columns}')
+        print(f'df: {df}')
+        print('ungrouped df')
+        print(ungrouped_df)
+        print('ungrouped df columns')
+        print(ungrouped_df.columns)
+        # Speedup is defined as slowest time - time / slowest time.
+        for batch_size in [16, 32, 64, 128]:
 
-    print(ungrouped_df.groupby(['batch_size', 'batching_type']))
-    # df = ungrouped_df.groupby(['batch_size', 'batching_type']).mean()
-    # ax = df.unstack().plot.bar(figsize=(5.1, 4), color=color_list)
-    # ax = ungrouped_df.transpose().plot.bar(figsize=(5.1, 4), color=color_list)
-    # ax = ungrouped_df.plot.bar(figsize=(5.1, 4), color=color_list)
+            for batching_type in ['static', 'static-64', 'dynamic']:
+                time = ungrouped_df[(ungrouped_df['batch_size'] == batch_size) & (ungrouped_df['batching_type'] == batching_type)]['step_2_000_000_update_time_mean'].values[0]
+                print(f' the slowest time for the batch size: {batch_size} is {slowest_time[str(batch_size)]}')
+                print(f'time is {time}')
+                if time > slowest_time[str(batch_size)]:
+                    slowest_time[str(batch_size)] = time
+            for batching_type in ['static', 'static-64', 'dynamic']:
+                time = ungrouped_df[(ungrouped_df['batch_size'] == batch_size) & (ungrouped_df['batching_type'] == batching_type)]['step_2_000_000_update_time_mean'].values[0]
+                # ungrouped_df.loc[(ungrouped_df['batch_size'] == batch_size) & (ungrouped_df['batching_type'] == batching_type), 'step_2_000_000_update_time_mean'] = (slowest_time[str(batch_size)]- time)/slowest_time[str(batch_size)]*100
+                ungrouped_df.loc[(ungrouped_df['batch_size'] == batch_size) & (ungrouped_df['batching_type'] == batching_type), 'step_2_000_000_update_time_mean'] = slowest_time[str(batch_size)]/time
 
+        # There is no stdev since the data is alwasy the same shuffle.
+        # df_std = df.groupby(['batch_size', 'batching_type']).std()
+        # print(df_std)
+        print('ungrouped df after modifying values')
+        print(ungrouped_df)
 
-    bar_width = 0.3
-    x = np.arange(len([16, 32, 64, 128]))
-    print(ungrouped_df[ungrouped_df['batching_type'] == 'dynamic']['step_2_000_000_update_time_mean'])
-    __, ax = plt.subplots(figsize=(5.1, 4))
-    # Grouped Bar Plot
-    plt.bar(x - 0.3, ungrouped_df[ungrouped_df['batching_type'] == 'dynamic']['step_2_000_000_update_time_mean'], bar_width, label='dynamic', color='skyblue')
-    plt.bar(x + 0.3, ungrouped_df[ungrouped_df['batching_type'] == 'static']['step_2_000_000_update_time_mean'], bar_width, label='static-$2^N$', color='green')
-    plt.bar(x, ungrouped_df[ungrouped_df['batching_type'] == 'static-64']['step_2_000_000_update_time_mean'], bar_width, label='static-$64$', color='mediumvioletred')
-
-
-    import matplotlib.font_manager as font_manager
-    font = font_manager.FontProperties(family=FONT,
-                                    # weight='bold',
-                                    style='normal', size=FONTSIZE)
+        print(ungrouped_df.groupby(['batch_size', 'batching_type']))
+        # df = ungrouped_df.groupby(['batch_size', 'batching_type']).mean()
+        # ax = df.unstack().plot.bar(figsize=(5.1, 4), color=color_list)
+        # ax = ungrouped_df.transpose().plot.bar(figsize=(5.1, 4), color=color_list)
+        # ax = ungrouped_df.plot.bar(figsize=(5.1, 4), color=color_list)
 
 
-    ax.set_xlabel('Batch size', fontsize=FONTSIZE, font=FONT)
-    ax.set_ylabel('Relative combined time speedup %', fontsize=FONTSIZE, font=FONT)
-    ax.set_xticks([0, 1, 2, 3], font=FONT, fontsize=FONTSIZE, rotation=45)
+        bar_width = 0.3
+        x = np.arange(len([16, 32, 64, 128]))
+        
+        print(ungrouped_df[ungrouped_df['batching_type'] == 'dynamic']['step_2_000_000_update_time_mean'])
+        patterns = [ "" , "-" , "o"]
+        # Grouped Bar Plot
+        ax[ax_index].bar(x - 0.3, ungrouped_df[ungrouped_df['batching_type'] == 'dynamic']['step_2_000_000_update_time_mean'], bar_width, label='dynamic', color="skyblue") #, hatch=patterns[0])
+        ax[ax_index].bar(x + 0.3, ungrouped_df[ungrouped_df['batching_type'] == 'static']['step_2_000_000_update_time_mean'], bar_width, label='static-$2^N$', color=color_list[1]) #, hatch=patterns[1])
+        ax[ax_index].bar(x, ungrouped_df[ungrouped_df['batching_type'] == 'static-64']['step_2_000_000_update_time_mean'], bar_width, label='static-$64$', color='mediumvioletred') #, hatch=patterns[2])
 
-    ax.set_xticklabels([16, 32, 64, 128], font=FONT, fontsize=FONTSIZE, rotation=45)
 
-    if dataset == 'aflow':
-        ax.set_yticks([0, 10, 20, 30, 40, 50], font=FONT, fontsize=FONTSIZE)
+        import matplotlib.font_manager as font_manager
+        font = font_manager.FontProperties(family=FONT,
+                                        # weight='bold',
+                                        style='normal', size=FONTSIZE)
 
-        ax.set_yticklabels([0, 10, 20, 30, 40, 50], font=FONT, fontsize=FONTSIZE)
 
-    else:
-        ax.set_yticklabels([0, 50, 100, 150, 200, 250], font=FONT, fontsize=FONTSIZE)
-    plt.legend(
-        ["dynamic", "static-$2^N$", "static-$64$"], fontsize=FONTSIZE,
-        prop=font, edgecolor="black", fancybox=False, loc='upper left')
+        ax[ax_index].set_ylabel('Speedup', fontsize=FONTSIZE, font=FONT)
+        ax[ax_index].set_xticks([0, 1, 2, 3], font=FONT, fontsize=FONTSIZE, rotation=45)
+
+        ax[1].set_xticklabels([16, 32, 64, 128], font=FONT, fontsize=FONTSIZE, rotation=45)
+
+        if dataset == 'aflow':
+            # ax.set_yticks([0, 10, 20, 30, 40, 50], font=FONT, fontsize=FONTSIZE)
+            # ax.set_yticks([0, 10, 20, 30, 40, 50], font=FONT, fontsize=FONTSIZE)
+            ax[ax_index].set_yticks([0, 0.5, 1., 1.5, 2, 2.5, 3], font=FONT, fontsize=FONTSIZE)
+            ax[ax_index].set_xticklabels(['', '', '', ''], font=FONT, fontsize=FONTSIZE)
+            ax[ax_index].text(-0.2, 2.5, 'PaiNN', font=FONT, fontsize=FONTSIZE)  # AFLOW
+            ax[ax_index].text(-0.2, 2.7, 'AFLOW', font=FONT, fontsize=FONTSIZE)
+            ax[ax_index].legend(
+                ["dynamic", "static-$2^N$", "static-$64$"], fontsize=FONTSIZE,
+                prop=font, edgecolor="black", fancybox=False, loc='upper right')
+        else:
+            # ax.set_yticks([0, 20, 40, 60, 80], font=FONT, fontsize=FONTSIZE)
+            # ax.set_yticklabels([0, 20, 40, 60, 80], font=FONT, fontsize=FONTSIZE)
+            ax[ax_index].set_yticks([0, 0.5, 1., 1.5, 2, 2.5, 3], font=FONT, fontsize=FONTSIZE)
+            # ax[ax_index].set_yticklabels([0, 0.5, 1., 1.5, 2, 2.5, 3], font=FONT, fontsize=FONTSIZE)
+            ax[ax_index].text(-0.2, 2.5, 'PaiNN', font=FONT, fontsize=FONTSIZE)  # AFLOW
+            ax[ax_index].text(-0.2, 2.7, 'QM9', font=FONT, fontsize=FONTSIZE)
+            ax[ax_index].set_xlabel('Batch size', fontsize=FONTSIZE, font=FONT)
+
     offset=0
-    ax.text(2.5, 45+offset, 'PaiNN', font=FONT, fontsize=FONTSIZE)
-    ax.text(2.5, 42+offset, 'AFLOW', font=FONT, fontsize=FONTSIZE)
+    # ax.text(2.5, 45+offset, 'PaiNN', font=FONT, fontsize=FONTSIZE)  # AFLOW
+    # ax.text(2.5, 42+offset, 'AFLOW', font=FONT, fontsize=FONTSIZE)
+    # ax.text(2.0, 72+offset, 'PaiNN', font=FONT, fontsize=FONTSIZE)  # AFLOW
+    # ax.text(2.0, 67+offset, 'QM9', font=FONT, fontsize=FONTSIZE)    
     plt.tight_layout()
     plt.savefig(
-        f'/home/dts/Documents/theory/batching_paper/figs/batch_speed_up_combined_time_{dataset}_model_{model}.png',
+        f'/home/dts/Documents/theory/batching_paper/figs/batch_speed_up_combined_time_model_{model}.png',
         dpi=600)
     plt.show()
 
