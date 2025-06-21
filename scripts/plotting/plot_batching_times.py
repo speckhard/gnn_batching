@@ -45,7 +45,8 @@ BASE_DIR = '/home/dts/Documents/hu/jraph_MPEU/batch_data'
 # /home/dts/Documents/hu/parsed_profiling_painn_cpu_qm9_aflow_schnet_mpeu_100k_steps_17_31__03_04_2025.csv
 # COMBINED_CSV = 'parsed_profiling_static_batching_seb_fix_qm9_aflow_schnet_mpeu_100k_steps_16_05__12_12_2024.csv'
 
-COMBINED_CSV = 'parsed_profiling_painn_cpu_qm9_aflow_schnet_mpeu_100k_steps_17_31__03_04_2025.csv'
+COMBINED_CSV = 'parsed_profiling_painn_cpu_qm9_aflow_schnet_mpeu_100k_steps_12_55__21_06_2025.csv'
+# COMBINED_CSV = 'parsed_profiling_painn_cpu_qm9_aflow_schnet_mpeu_100k_steps_17_31__03_04_2025.csv'
 # COMBINED_CSV = 'parsed_profiling_static_batching_seb_fix_qm9_aflow_schnet_mpeu_100k_steps_15_12__30_12_2024.csv'
 # COMBINED_CSV = 'parsed_profiling_static_batching_seb_fix_qm9_aflow_schnet_mpeu_100k_steps_11_31__23_12_2024.csv'
 # COMBINED_CSV = 'parsed_profiling_batching_2_000_000_steps_aflow_qm9_20_12_2024.csv'
