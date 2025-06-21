@@ -2,7 +2,7 @@
 
 This repository contains the software all the experiments and plots to analyze the performance of different batching algorithms on GNN models for different datasets, batch sizes, hardware and number of training steps run. The experiments are detailed in this [paper](https://arxiv.org/pdf/2502.00944).
 
-This code implements several GNN models. It implements the [SchNet](https://arxiv.org/pdf/1712.06113) model. It implements a message passing model with edge updates, MPEU, graph neural network with the architecture described in this [article](https://arxiv.org/pdf/1806.03146.pdf). There is also the option to run the [PaiNN](https://proceedings.mlr.press/v139/schutt21a.html) model.
+This code implements several GNN models. It implements the [SchNet](https://arxiv.org/pdf/1712.06113) model. It implements a message passing model with edge updates, MPEU, graph neural network with the architecture described in this [article](https://arxiv.org/pdf/1806.03146.pdf). There is also the option to run the equivariant [PaiNN](https://proceedings.mlr.press/v139/schutt21a.html) model.
 
 ## Python library requirements:  
 See requirements.txt.
